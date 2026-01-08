@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Seating Arrangement System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --muted-color: #6c757d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-color);
+            padding-top: 20px;
+            color: var(--dark-color);
+        }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        @media print {
+            body > *:not(#print-area) {
+                display: none !important;
+            }
+            #print-area {
+                display: block;
+            }
+            #print-area .card-body {
+                box-shadow: none;
+            }
+        }
+
+        .header {
+            background: linear-gradient(45deg, var(--primary-color), #0056b3);
+            color: #fff;
+            padding: 40px 0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+
+        .header .lead {
+            font-weight: 300;
+        }
+
+        .login-container {
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .login-container h2 {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .dashboard {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 50px;
+            color: #fff;
+            animation: pulse 2s infinite;
+            font-size: 0.85rem;
+        }
+
+        .status-released {
+            background-color: var(--success-color);
+        }
+
+        .status-pending {
+            background-color: var(--warning-color);
+        }
+
+        .classroom {
+            background-color: var(--light-color);
+            border: 2px solid var(--secondary-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .exam-details-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .exam-details-container:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .exam-info {
+            flex-grow: 1;
+        }
+
+        .exam-info h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .exam-info p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .classroom h3 {
+            color: var(--dark-color);
+        }
+        
+        .seating-plan {
+            display: grid;
+            gap: 15px;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .seat {
+            background-color: #e9ecef;
+            border: 1px solid var(--muted-color);
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .seat.occupied {
+            background-color: var(--info-color);
+            color: #fff;
+            border-color: #0d6efd;
+        }
+        
+        .seat.locked {
+            background-color: var(--secondary-color);
+            color: #fff;
+        }
+
+        .seat.current-user {
+            background-color: var(--success-color);
+            color: #fff;
+            border-color: #198754;
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+            animation: highlightSeat 1.5s infinite alternate;
+        }
+
+        .seat-number {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .roll-number {
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+        
+        .door {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 30px;
+            background-color: #8b4513;
+            color: #fff;
+            font-size: 0.8rem;
+            line-height: 30px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+
+        .teacher-desk {
+            background-color: #6c757d;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .info-placeholder {
+            color: var(--warning-color);
+            font-style: italic;
+        }
+        
+        .blurred {
+            filter: blur(5px);
+            transition: filter 0.5s ease;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateY(-20px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification.success { background-color: var(--success-color); }
+        .notification.warning { background-color: var(--warning-color); }
+        .notification.info { background-color: var(--info-color); }
+        
+        .last-update {
+            font-size: 0.75rem;
+            color: var(--muted-color);
+            margin-top: 10px;
+        }
+        
+        .student-count {
+            font-size: 1rem;
+            color: var(--muted-color);
+            font-weight: normal;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+        }
+
+        .status-released.status-badge {
+            animation: none; /* Disable pulse on released status */
+        }
+        
+        @keyframes highlightSeat {
+            from { box-shadow: 0 0 15px rgba(40, 167, 69, 0.5); }
+            to { box-shadow: 0 0 25px rgba(40, 167, 69, 0.8); }
+        }
+        
+        #print-area {
+            display: none;
+            padding: 20px;
+        }
+        
+        .print-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .print-classroom {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .print-seating-plan {
+            display: grid;
+            gap: 5px;
+        }
+        
+        .print-seat {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            font-size: 10px;
+            min-height: 30px;
+        }
+
+        .modal-content {
+            border-radius: 10px;
+        }
+        .modal-header {
+            border-bottom: none;
+        }
+        .modal-footer {
+            border-top: none;
+        }
+
+        #timer-display {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--info-color);
+            transition: all 0.3s ease;
+        }
+        
+        #timer-display.active {
+            animation: pulse 1s infinite;
+        }
+
+        .timer-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .timer-controls label {
+            font-size: 0.9rem;
+        }
+        
+        .room-list {
+            margin-top: 10px;
+        }
+        
+        .room-item {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+        }
+        
+        .row-label {
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        
+        .column-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        
+        .student-management {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .range-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        .range-input-container .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .student-list-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+        }
+        
+        .student-list-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #dee2e6;
+            font-family: monospace;
+        }
+        
+        .student-list-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header text-center">
+        <h1>Exam Seating Arrangement System</h1>
+        <p class="lead">Preventing mass copying through unpredictable seating plans</p>
+    </div>
+    <div class="notification hidden" id="notification"></div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmationMessage">
+                    Are you sure you want to proceed?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Exam Modal -->
+    <div class="modal fade" id="scheduleExamModal" tabindex="-1" aria-labelledby="scheduleExamModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scheduleExamModalLabel">Schedule New Exam</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="exam-name" class="form-label">Exam Name</label>
+                        <input type="text" class="form-control" id="exam-name" placeholder="e.g., Final Physics Exam">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exam-date" class="form-label">Exam Date</label>
+                        <input type="date" class="form-control" id="exam-date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exam-time" class="form-label">Exam Time</label>
+                        <input type="time" class="form-control" id="exam-time">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-exam-btn">Save Exam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Room Modal -->
+    <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoomModalLabel">Add New Classroom</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="room-name" class="form-label">Room Name</label>
+                        <input type="text" class="form-control" id="room-name" placeholder="e.g., A-105">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="room-rows" class="form-label">Number of Rows</label>
+                                <input type="number" class="form-control" id="room-rows" value="5" min="1" max="20">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="room-columns" class="form-label">Number of Columns</label>
+                                <input type="number" class="form-control" id="room-columns" value="6" min="1" max="20">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="room-capacity" class="form-label">Total Capacity</label>
+                        <input type="text" class="form-control" id="room-capacity" readonly>
+                        <div class="form-text">Calculated as Rows × Columns</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-room-btn">Add Room</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Students Modal -->
+    <div class="modal fade" id="addStudentsModal" tabindex="-1" aria-labelledby="addStudentsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStudentsModalLabel">Add Students</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Add students by specifying a roll number range. Students will be automatically created with their roll number as both username and password.
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>Add Students by Range</h6>
+                        <div class="range-input-container">
+                            <div class="form-group">
+                                <label for="prefix" class="form-label">Prefix</label>
+                                <input type="text" class="form-control" id="prefix" value="24H71A" placeholder="e.g., 24H71A">
+                            </div>
+                            <div class="form-group">
+                                <label for="start-number" class="form-label">Start Number</label>
+                                <input type="number" class="form-control" id="start-number" value="6101" min="1" max="9999">
+                            </div>
+                            <div class="form-group">
+                                <label for="end-number" class="form-label">End Number</label>
+                                <input type="number" class="form-control" id="end-number" value="6199" min="1" max="9999">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" id="generate-students-btn">Generate Students</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>Or Add Individual Students</h6>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="individual-roll" placeholder="Enter roll number (e.g., 24H71A6101)">
+                            <button class="btn btn-outline-secondary" type="button" id="add-individual-btn">Add</button>
+                        </div>
+                    </div>
+                    
+                    <div class="student-list-container" id="student-preview">
+                        <p class="text-muted">No students generated yet. Use the range generator above.</p>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p><strong>Total Students to Add:</strong> <span id="total-students-count">0</span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-students-btn">Save Students</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Timer Modal -->
+    <div class="modal fade" id="setTimerModal" tabindex="-1" aria-labelledby="setTimerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="setTimerModalLabel">Set Release Timer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="timer-minutes" class="form-label">Minutes</label>
+                        <input type="number" class="form-control" id="timer-minutes" value="5" min="0" max="60">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timer-seconds" class="form-label">Seconds</label>
+                        <input type="number" class="form-control" id="timer-seconds" value="0" min="0" max="59">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveTimerBtn">Set Timer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="login-page">
+        <div class="login-container">
+            <h2 class="text-center mb-4">Login to Your Account</h2>
+            <div class="mb-3">
+                <label for="user-type" class="form-label">I am a:</label>
+                <select class="form-select" id="user-type">
+                    <option value="student">Student</option>
+                    <option value="admin">Administrator</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter your username">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter your password">
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="remember-me">
+                <label class="form-check-label" for="remember-me">
+                    Remember me
+                </label>
+            </div>
+            <div class="d-grid">
+                <button class="btn btn-primary" id="login-btn">Login</button>
+            </div>
+            <div class="alert alert-danger mt-3 hidden" id="login-error">
+                Invalid credentials. Please try again.
+            </div>
+        </div>
+    </div>
+
+    <div class="container hidden" id="student-dashboard">
+        <div class="dashboard">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Student Dashboard</h2>
+                <button class="btn btn-outline-danger" id="student-logout">Logout</button>
+            </div>
+            <div class="alert alert-info">
+                <h4>Welcome, <span id="student-name">John Doe</span>!</h4>
+                <p>Your upcoming exam details are listed below.</p>
+            </div>
+            <h4 class="mb-3">Upcoming Exams</h4>
+            <div id="student-exams-list"></div>
+        </div>
+
+        <div class="dashboard mt-4 hidden" id="student-exam-details">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 id="selected-exam-name"></h3>
+                <button class="btn btn-secondary" id="back-to-exams"><i class="fas fa-arrow-left me-2"></i>Back to Exams</button>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Your Seating Information</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>Roll Number:</strong> <span id="student-roll"></span></li>
+                                <li class="list-group-item"><strong>Room Number:</strong>
+                                    <span id="student-room"></span>
+                                </li>
+                                <li class="list-group-item"><strong>Row:</strong>
+                                    <span id="student-row"></span>
+                                </li>
+                                <li class="list-group-item"><strong>Column:</strong>
+                                    <span id="student-column"></span>
+                                </li>
+                                <li class="list-group-item"><strong>Seat Position:</strong>
+                                    <span id="student-seat"></span>
+                                </li>
+                                <li class="list-group-item"><strong>Exam Date:</strong> <span id="exam-date"></span></li>
+                                <li class="list-group-item"><strong>Exam Time:</strong> <span id="exam-time"></span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Seating Plan Status</h5>
+                            <div class="my-4">
+                                <div id="plan-pending">
+                                    <i class="fas fa-lock fa-3x text-warning mb-3"></i>
+                                    <h4 class="text-warning">Seating Plan Not Released Yet</h4>
+                                    <p>Please wait for the administrator to release the seating plan.</p>
+                                </div>
+                                <div id="plan-released" class="hidden">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <h4 class="text-success">Seating Plan Released</h4>
+                                    <p>You can now view your seating arrangement.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="classroom hidden" id="student-classroom">
+                <h3 class="text-center mb-4">Room: <span id="room-number"></span></h3>
+                <div class="door">Entrance</div>
+                <div class="seating-plan" id="student-seating-plan"></div>
+                <div class="teacher-desk">Teacher's Desk</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container hidden" id="admin-dashboard">
+        <div class="dashboard">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Administrator Dashboard</h2>
+                <button class="btn btn-outline-danger" id="admin-logout">Logout</button>
+            </div>
+            <div class="alert alert-info">
+                <h4>Welcome, Administrator!</h4>
+                <p>You can schedule and manage seating arrangements for upcoming exams.</p>
+            </div>
+
+            <!-- Student Management Section -->
+            <div class="student-management mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>Student Management</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentsModal">
+                        <i class="fas fa-user-plus me-2"></i>Add Students
+                    </button>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Current Students</h6>
+                                <p class="mb-2"><strong>Total Students:</strong> <span id="current-student-count">0</span></p>
+                                <p class="mb-0"><strong>Last Added:</strong> <span id="last-student-added">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Quick Actions</h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="export-students-btn">
+                                        <i class="fas fa-download me-1"></i>Export Student List
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" id="clear-students-btn">
+                                        <i class="fas fa-trash me-1"></i>Clear All Students
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Upcoming Exams</h4>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleExamModal" id="schedule-exam-btn">
+                        <i class="fas fa-plus me-2"></i>Schedule New Exam
+                    </button>
+                    <button class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#addRoomModal" id="add-room-btn">
+                        <i class="fas fa-door-open me-2"></i>Add Classroom
+                    </button>
+                </div>
+            </div>
+            
+            <div id="admin-exams-list"></div>
+
+            <hr class="my-4">
+
+            <div id="admin-exam-details" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 id="admin-selected-exam-name"></h3>
+                    <button class="btn btn-secondary" id="back-to-admin-exams"><i class="fas fa-arrow-left me-2"></i>Back to List</button>
+                </div>
+                
+                <!-- Classroom Management Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Classrooms for this Exam</h5>
+                            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+                                <i class="fas fa-plus me-1"></i>Add Room
+                            </button>
+                        </div>
+                        <div id="exam-classrooms-list" class="room-list">
+                            <p class="text-muted">No classrooms added yet. Add rooms using the button above.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Seating Plan Controls</h5>
+                                <p>Generate a new unpredictable seating plan or release it to students.</p>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" id="generate-plan">Generate New Seating Plan</button>
+                                    <button class="btn btn-success release-btn" id="release-plan">Release Seating Plan</button>
+                                    <button class="btn btn-warning" id="revoke-plan">Revoke Seating Plan</button>
+                                    <button class="btn btn-info" id="print-report">Print Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Statistics</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><strong>Total Students:</strong> <span id="total-students">0</span></li>
+                                    <li class="list-group-item"><strong>Classrooms Allocated:</strong> <span id="total-classrooms">0</span></li>
+                                    <li class="list-group-item"><strong>Seating Plan Status:</strong> <span id="plan-status">Not Released</span></li>
+                                    <li class="list-group-item"><strong>Last Generated:</strong> <span id="last-generated">-</span></li>
+                                    <li class="list-group-item"><strong>Last Released:</strong> <span id="last-released">-</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4" id="timer-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Auto-Release Timer</h5>
+                        <p id="timer-message">The seating plan is not scheduled for automatic release.</p>
+                        <div class="timer-controls d-grid d-md-block gap-2">
+                             <span id="timer-display">--:--</span>
+                            <button class="btn btn-sm btn-outline-primary" id="set-timer-btn" data-bs-toggle="modal" data-bs-target="#setTimerModal">
+                                <i class="fas fa-clock me-1"></i>Set Timer
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning hidden" id="cancel-timer-btn">
+                                <i class="fas fa-stopwatch me-1"></i>Cancel Timer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-center mb-4">Seating Plan Overview</h3>
+                <div id="admin-seating-plans"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="print-area"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+        // UI Elements
+        const loginPage = document.getElementById('login-page');
+        const studentDashboard = document.getElementById('student-dashboard');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const loginBtn = document.getElementById('login-btn');
+        const studentLogout = document.getElementById('student-logout');
+        const adminLogout = document.getElementById('admin-logout');
+        const userType = document.getElementById('user-type');
+        const loginError = document.getElementById('login-error');
+        const notification = document.getElementById('notification');
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        const confirmationMessage = document.getElementById('confirmationMessage');
+        const confirmActionBtn = document.getElementById('confirmActionBtn');
+        const scheduleExamModal = new bootstrap.Modal(document.getElementById('scheduleExamModal'));
+        const saveExamBtn = document.getElementById('save-exam-btn');
+        const addRoomModal = new bootstrap.Modal(document.getElementById('addRoomModal'));
+        const saveRoomBtn = document.getElementById('save-room-btn');
+        const roomRowsInput = document.getElementById('room-rows');
+        const roomColumnsInput = document.getElementById('room-columns');
+        const roomCapacityInput = document.getElementById('room-capacity');
+        const roomNameInput = document.getElementById('room-name');
+        const studentExamsList = document.getElementById('student-exams-list');
+        const studentExamDetails = document.getElementById('student-exam-details');
+        const backToExamsBtn = document.getElementById('back-to-exams');
+        const adminExamsList = document.getElementById('admin-exams-list');
+        const adminExamDetails = document.getElementById('admin-exam-details');
+        const backToAdminExamsBtn = document.getElementById('back-to-admin-exams');
+        const adminSeatingPlansContainer = document.getElementById('admin-seating-plans');
+        const examClassroomsList = document.getElementById('exam-classrooms-list');
+        
+        const setTimerModal = new bootstrap.Modal(document.getElementById('setTimerModal'));
+        const saveTimerBtn = document.getElementById('saveTimerBtn');
+        const timerDisplay = document.getElementById('timer-display');
+        const setTimerBtn = document.getElementById('set-timer-btn');
+        const cancelTimerBtn = document.getElementById('cancel-timer-btn');
+        const timerMessage = document.getElementById('timer-message');
+        const releasePlanBtn = document.getElementById('release-plan');
+        const generatePlanBtn = document.getElementById('generate-plan');
+        const studentClassroom = document.getElementById('student-classroom'); 
+        
+        // Student Management Elements
+        const addStudentsModal = new bootstrap.Modal(document.getElementById('addStudentsModal'));
+        const generateStudentsBtn = document.getElementById('generate-students-btn');
+        const saveStudentsBtn = document.getElementById('save-students-btn');
+        const addIndividualBtn = document.getElementById('add-individual-btn');
+        const studentPreview = document.getElementById('student-preview');
+        const totalStudentsCount = document.getElementById('total-students-count');
+        const currentStudentCount = document.getElementById('current-student-count');
+        const lastStudentAdded = document.getElementById('last-student-added');
+        const exportStudentsBtn = document.getElementById('export-students-btn');
+        const clearStudentsBtn = document.getElementById('clear-students-btn');
+
+        let currentUser = null;
+        let students = [];
+        let exams = [];
+        let currentExamId = null;
+        let pendingAction = null;
+        let timerIntervals = {};
+        let generatedStudentsPreview = [];
+        // The BroadcastChannel for cross-tab communication.
+        const syncChannel = new BroadcastChannel('exam-seating-channel');
+
+        // Helper functions for Local Storage
+        function saveToLocalStorage(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage(key) {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        }
+
+        // UUID Generator
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Calculate room capacity based on rows and columns
+        function calculateRoomCapacity() {
+            const rows = parseInt(roomRowsInput.value) || 0;
+            const columns = parseInt(roomColumnsInput.value) || 0;
+            const capacity = rows * columns;
+            roomCapacityInput.value = capacity;
+            return capacity;
+        }
+
+        // Convert number to letter (1 -> A, 2 -> B, etc.)
+        function numberToLetter(num) {
+            return String.fromCharCode(64 + num);
+        }
+
+        // Generate seat number with row and column (e.g., A1, B3)
+        function generateSeatNumber(row, col) {
+            return `${numberToLetter(row)}${col}`;
+        }
+
+        // Parse roll number range
+        function parseRollNumberRange(prefix, start, end) {
+            const students = [];
+            for (let i = parseInt(start); i <= parseInt(end); i++) {
+                const rollNumber = `${prefix}${i}`;
+                students.push({
+                    rollNumber: rollNumber,
+                    name: `Student ${i}`
+                });
+            }
+            return students;
+        }
+
+        // Update student statistics
+        function updateStudentStats() {
+            currentStudentCount.textContent = students.length;
+            if (students.length > 0) {
+                const lastStudent = students[students.length - 1];
+                lastStudentAdded.textContent = `${lastStudent.rollNumber} (${lastStudent.name})`;
+            } else {
+                lastStudentAdded.textContent = '-';
+            }
+        }
+
+        // Initial Data Setup
+        function initializeData() {
+            // Load existing students from local storage
+            students = loadFromLocalStorage('students') || [];
+            exams = loadFromLocalStorage('exams') || [];
+
+            // If no students exist, create some default students
+            if (students.length === 0) {
+                // Generate students from 6101 to 6199 with the 24H71A prefix
+                const generatedStudents = [];
+                const prefix = '24H71A';
+                for (let i = 6101; i <= 6199; i++) {
+                    const rollNumber = `${prefix}${i}`;
+                    generatedStudents.push({
+                        rollNumber: rollNumber,
+                        name: `Student ${i}`
+                    });
+                }
+                students = generatedStudents;
+                saveToLocalStorage('students', students);
+            }
+
+            if (!loadFromLocalStorage('exams')) {
+                // Add a default exam if none exist
+                const defaultExam = {
+                    id: generateUUID(),
+                    name: 'Semester End Exams',
+                    date: '2025-12-01',
+                    time: '09:00',
+                    classrooms: [
+                        { name: 'A-101', rows: 5, columns: 6, capacity: 30 },
+                        { name: 'A-102', rows: 5, columns: 6, capacity: 30 },
+                        { name: 'A-103', rows: 5, columns: 6, capacity: 30 },
+                        { name: 'A-104', rows: 5, columns: 6, capacity: 30 }
+                    ],
+                    seatingPlan: null,
+                    status: { generated: false, released: false, lastGenerated: null, lastReleased: null },
+                    timerEndTime: null
+                };
+                exams.push(defaultExam);
+                saveToLocalStorage('exams', exams);
+            }
+            
+            // Re-start any active timers
+            exams.forEach(exam => {
+                if (exam.timerEndTime && exam.timerEndTime > Date.now()) {
+                    startReleaseTimer(exam.id, (exam.timerEndTime - Date.now()) / 1000);
+                }
+            });
+            
+            updateStudentStats();
+            updateUI();
+        }
+
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function updateUI() {
+            if (currentUser && currentUser.type === 'admin') {
+                renderAdminExamsList();
+            } else if (currentUser && currentUser.type === 'student') {
+                renderStudentExamsList();
+            }
+        }
+
+        function renderAdminExamsList() {
+            adminExamsList.innerHTML = '';
+            if (exams.length === 0) {
+                adminExamsList.innerHTML = '<p class="text-center text-muted">No exams have been scheduled yet.</p>';
+            }
+            exams.forEach(exam => {
+                const examDiv = document.createElement('div');
+                examDiv.className = 'exam-details-container';
+                examDiv.innerHTML = `
+                    <div class="exam-info">
+                        <h5>${exam.name}</h5>
+                        <p>Date: ${exam.date}, Time: ${exam.time}</p>
+                        <p>Status: 
+                            <span class="badge ${exam.status.released ? 'bg-success' : 'bg-warning'}">
+                                ${exam.status.released ? 'Released' : 'Not Released'}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="exam-actions d-grid gap-2 d-md-block">
+                        <button class="btn btn-sm btn-primary view-exam-btn" data-exam-id="${exam.id}">
+                            <i class="fas fa-eye me-1"></i>View
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-exam-btn" data-exam-id="${exam.id}">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                `;
+                adminExamsList.appendChild(examDiv);
+            });
+        }
+        
+        function renderStudentExamsList() {
+            studentExamsList.innerHTML = '';
+            if (exams.length === 0) {
+                studentExamsList.innerHTML = '<p class="text-center text-muted">No exams have been scheduled yet.</p>';
+            }
+            exams.forEach(exam => {
+                const examDiv = document.createElement('div');
+                examDiv.className = 'exam-details-container';
+                examDiv.innerHTML = `
+                    <div class="exam-info">
+                        <h5>${exam.name}</h5>
+                        <p>Date: ${exam.date}, Time: ${exam.time}</p>
+                        <p>Seating Plan: 
+                            <span class="badge ${exam.status.released ? 'bg-success' : 'bg-warning'}">
+                                ${exam.status.released ? 'Released' : 'Not Released'}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="exam-actions d-grid gap-2 d-md-block">
+                        <button class="btn btn-sm btn-primary view-student-exam-btn" data-exam-id="${exam.id}">
+                            <i class="fas fa-search me-1"></i>View Details
+                        </button>
+                    </div>
+                `;
+                studentExamsList.appendChild(examDiv);
+            });
+        }
+
+        function renderExamClassrooms(exam) {
+            examClassroomsList.innerHTML = '';
+            if (exam.classrooms.length === 0) {
+                examClassroomsList.innerHTML = '<p class="text-muted">No classrooms added yet. Add rooms using the button above.</p>';
+            } else {
+                exam.classrooms.forEach((room, index) => {
+                    const roomItem = document.createElement('div');
+                    roomItem.className = 'room-item d-flex justify-content-between align-items-center';
+                    roomItem.innerHTML = `
+                        <div>
+                            <strong>${room.name}</strong> - Capacity: ${room.capacity} seats
+                            (Rows: ${room.rows}, Columns: ${room.columns})
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger remove-room-btn" data-room-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    examClassroomsList.appendChild(roomItem);
+                });
+            }
+        }
+
+        function renderAdminExamDetails(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) return;
+
+            document.getElementById('admin-selected-exam-name').textContent = exam.name;
+            document.getElementById('total-students').textContent = students.length;
+            document.getElementById('total-classrooms').textContent = exam.classrooms.length;
+            document.getElementById('plan-status').textContent = exam.status.released ? 'Released' : 'Not Released';
+            document.getElementById('last-generated').textContent = exam.status.lastGenerated || '-';
+            document.getElementById('last-released').textContent = exam.status.lastReleased || '-';
+            
+            // Render classrooms list
+            renderExamClassrooms(exam);
+            
+            const releaseBtn = document.getElementById('release-plan');
+            const revokeBtn = document.getElementById('revoke-plan');
+            const timerCard = document.getElementById('timer-card');
+            
+            releaseBtn.classList.remove('hidden');
+            revokeBtn.classList.remove('hidden');
+            timerCard.classList.remove('hidden');
+            generatePlanBtn.disabled = false;
+            releasePlanBtn.disabled = false;
+            setTimerBtn.classList.remove('hidden');
+            cancelTimerBtn.classList.add('hidden');
+            timerDisplay.classList.remove('active');
+            
+            if (exam.status.released) {
+                releaseBtn.classList.add('hidden');
+                revokeBtn.classList.remove('hidden');
+                timerCard.classList.add('hidden');
+                releasePlanBtn.disabled = true;
+                setTimerBtn.disabled = true;
+            } else {
+                releaseBtn.classList.remove('hidden');
+                revokeBtn.classList.add('hidden');
+                timerCard.classList.remove('hidden');
+                setTimerBtn.disabled = false;
+            }
+
+            if (!exam.status.generated) {
+                releasePlanBtn.disabled = true;
+                revokeBtn.disabled = true;
+                document.getElementById('print-report').disabled = true;
+                setTimerBtn.disabled = true;
+            } else {
+                revokeBtn.disabled = false;
+                document.getElementById('print-report').disabled = false;
+                setTimerBtn.disabled = false;
+            }
+
+            if (exam.timerEndTime && exam.timerEndTime > Date.now()) {
+                releasePlanBtn.disabled = true;
+                generatePlanBtn.disabled = true;
+                setTimerBtn.classList.add('hidden');
+                cancelTimerBtn.classList.remove('hidden');
+                timerDisplay.classList.add('active');
+                timerMessage.textContent = 'The seating plan will be released automatically when the timer expires.';
+            } else {
+                timerMessage.textContent = 'The seating plan is not scheduled for automatic release.';
+            }
+            
+            // Initial timer display update
+            updateTimerDisplay(examId);
+
+            renderAdminSeatingPlans(exam);
+            adminExamsList.classList.add('hidden');
+            adminExamDetails.classList.remove('hidden');
+        }
+
+        function renderAdminSeatingPlans(exam) {
+            adminSeatingPlansContainer.innerHTML = '';
+            if (exam.seatingPlan && exam.seatingPlan.rooms) {
+                exam.seatingPlan.rooms.forEach(room => {
+                    // Find room configuration
+                    const roomConfig = exam.classrooms.find(c => c.name === room.name);
+                    const columns = roomConfig ? roomConfig.columns : 6; // Default to 6 if not found
+                    const rows = roomConfig ? roomConfig.rows : 5;
+                    
+                    const roomDiv = document.createElement('div');
+                    roomDiv.className = 'classroom';
+                    
+                    // Set dynamic grid columns based on room configuration
+                    const seatingPlan = document.createElement('div');
+                    seatingPlan.className = 'seating-plan';
+                    seatingPlan.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+                    
+                    // Add column labels
+                    for (let col = 1; col <= columns; col++) {
+                        const colLabel = document.createElement('div');
+                        colLabel.className = 'column-label';
+                        colLabel.textContent = col;
+                        seatingPlan.appendChild(colLabel);
+                    }
+                    
+                    // Add row labels and seats
+                    for (let row = 1; row <= rows; row++) {
+                        const rowLabel = document.createElement('div');
+                        rowLabel.className = 'row-label';
+                        rowLabel.textContent = numberToLetter(row);
+                        seatingPlan.appendChild(rowLabel);
+                        
+                        for (let col = 1; col <= columns; col++) {
+                            const seatIndex = (row - 1) * columns + (col - 1);
+                            const seat = room.seats[seatIndex];
+                            const seatElement = document.createElement('div');
+                            seatElement.className = `seat ${seat && seat.studentName ? 'occupied' : ''}`;
+                            const seatNumber = generateSeatNumber(row, col);
+                            seatElement.innerHTML = `
+                                <div class="seat-number">${seatNumber}</div>
+                                <div class="roll-number">${seat && seat.rollNumber ? seat.rollNumber : 'EMPTY'}</div>
+                                <small>${seat && seat.studentName ? seat.studentName : 'EMPTY'}</small>
+                            `;
+                            seatingPlan.appendChild(seatElement);
+                        }
+                    }
+                    
+                    const roomContent = `
+                        <h3 class="text-center mb-4">Room: ${room.name} <span class="student-count">(${room.seats.filter(s => s && s.studentName).length} students)</span></h3>
+                        <div class="door">Entrance</div>
+                        <div class="teacher-desk">Teacher's Desk</div>
+                    `;
+                    
+                    roomDiv.innerHTML = roomContent;
+                    // Insert seating plan after door but before teacher's desk
+                    const doorElement = roomDiv.querySelector('.door');
+                    doorElement.insertAdjacentElement('afterend', seatingPlan);
+                    
+                    adminSeatingPlansContainer.appendChild(roomDiv);
+                });
+            } else {
+                adminSeatingPlansContainer.innerHTML = '<p class="text-center text-muted">No seating plan has been generated yet for this exam.</p>';
+            }
+        }
+        
+        function renderStudentExamDetails(examId) {
+            // Re-fetch exams from local storage to ensure the latest data is used.
+            exams = loadFromLocalStorage('exams');
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) {
+                // If the exam is gone, just go back to the list and show a notification
+                showNotification('The exam you were viewing has been deleted.', 'warning');
+                studentExamDetails.classList.add('hidden');
+                studentExamsList.classList.remove('hidden');
+                return;
+            }
+            
+            const assignment = exam.seatingPlan && exam.seatingPlan.studentAssignments ? exam.seatingPlan.studentAssignments[currentUser.username] : null;
+
+            document.getElementById('selected-exam-name').textContent = exam.name;
+            document.getElementById('student-roll').textContent = currentUser.username;
+            document.getElementById('exam-date').textContent = exam.date;
+            document.getElementById('exam-time').textContent = exam.time;
+            
+            // This is the critical change: Only show plan if released.
+            if (exam.status.released && assignment) {
+                document.getElementById('plan-pending').classList.add('hidden');
+                document.getElementById('plan-released').classList.remove('hidden');
+                
+                document.getElementById('student-room').textContent = assignment.room;
+                document.getElementById('student-row').textContent = assignment.row;
+                document.getElementById('student-column').textContent = assignment.col;
+                document.getElementById('student-seat').textContent = `${assignment.room}-${assignment.seatNumber}`;
+                
+                renderStudentSeatingPlan(exam);
+                studentClassroom.classList.remove('hidden');
+
+            } else {
+                // If plan is not released, hide all details and show placeholders
+                document.getElementById('plan-pending').classList.remove('hidden');
+                document.getElementById('plan-released').classList.add('hidden');
+                
+                document.getElementById('student-room').textContent = '----';
+                document.getElementById('student-row').textContent = '--';
+                document.getElementById('student-column').textContent = '--';
+                document.getElementById('student-seat').textContent = '---------';
+                
+                studentClassroom.classList.add('hidden');
+            }
+
+            studentExamsList.classList.add('hidden');
+            studentExamDetails.classList.remove('hidden');
+        }
+
+        function renderStudentSeatingPlan(exam) {
+            const seatingPlanElement = document.getElementById('student-seating-plan');
+            seatingPlanElement.innerHTML = '';
+            const assignment = exam.seatingPlan && exam.seatingPlan.studentAssignments ? exam.seatingPlan.studentAssignments[currentUser.username] : null;
+            if (!assignment) {
+                seatingPlanElement.innerHTML = '<div class="col-12 text-center"><p>No seating assignment found.</p></div>';
+                return;
+            }
+            const roomData = exam.seatingPlan.rooms.find(room => room.name === assignment.room);
+            if (!roomData) {
+                seatingPlanElement.innerHTML = '<div class="col-12 text-center"><p>Room data not available.</p></div>';
+                return;
+            }
+            
+            // Find room configuration for column count
+            const roomConfig = exam.classrooms.find(c => c.name === assignment.room);
+            const columns = roomConfig ? roomConfig.columns : 6;
+            const rows = roomConfig ? roomConfig.rows : 5;
+            
+            // Set dynamic grid columns
+            seatingPlanElement.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+            
+            document.getElementById('room-number').textContent = assignment.room;
+            
+            // Add column labels
+            for (let col = 1; col <= columns; col++) {
+                const colLabel = document.createElement('div');
+                colLabel.className = 'column-label';
+                colLabel.textContent = col;
+                seatingPlanElement.appendChild(colLabel);
+            }
+            
+            // Add row labels and seats
+            for (let row = 1; row <= rows; row++) {
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'row-label';
+                rowLabel.textContent = numberToLetter(row);
+                seatingPlanElement.appendChild(rowLabel);
+                
+                for (let col = 1; col <= columns; col++) {
+                    const seatIndex = (row - 1) * columns + (col - 1);
+                    const seat = roomData.seats[seatIndex];
+                    const seatNumber = generateSeatNumber(row, col);
+                    const seatElement = document.createElement('div');
+                    
+                    if (seat && seat.rollNumber === currentUser.username) {
+                        seatElement.className = 'seat current-user';
+                        seatElement.innerHTML = `
+                            <div class="seat-number">${seatNumber}</div>
+                            <div class="roll-number">${assignment.rollNumber}</div>
+                            <small>Your Seat</small>
+                        `;
+                    } else if (seat && seat.studentName) {
+                        seatElement.className = 'seat locked';
+                        seatElement.innerHTML = `
+                            <div class="seat-number">${seatNumber}</div>
+                            <div class="roll-number">XXXXX</div>
+                        `;
+                    } else {
+                        seatElement.className = 'seat';
+                        seatElement.innerHTML = `
+                            <div class="seat-number">${seatNumber}</div>
+                            <div class="roll-number">EMPTY</div>
+                        `;
+                    }
+                    seatingPlanElement.appendChild(seatElement);
+                }
+            }
+        }
+
+        function addRoomToExam(examId, roomName, rows, columns, capacity) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) return false;
+
+            // Check if room name already exists
+            if (exam.classrooms.some(room => room.name === roomName)) {
+                showNotification(`Room "${roomName}" already exists for this exam.`, 'warning');
+                return false;
+            }
+
+            const newRoom = {
+                name: roomName,
+                rows: rows,
+                columns: columns,
+                capacity: capacity
+            };
+
+            exam.classrooms.push(newRoom);
+            saveToLocalStorage('exams', exams);
+            
+            // Reset seating plan if it exists
+            if (exam.seatingPlan) {
+                exam.seatingPlan = null;
+                exam.status.generated = false;
+                exam.status.lastGenerated = null;
+                exam.status.released = false;
+                saveToLocalStorage('exams', exams);
+            }
+            
+            return true;
+        }
+
+        function removeRoomFromExam(examId, roomIndex) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam || roomIndex < 0 || roomIndex >= exam.classrooms.length) return false;
+
+            // Remove the room
+            exam.classrooms.splice(roomIndex, 1);
+            
+            // Reset seating plan if it exists
+            if (exam.seatingPlan) {
+                exam.seatingPlan = null;
+                exam.status.generated = false;
+                exam.status.lastGenerated = null;
+                exam.status.released = false;
+            }
+            
+            saveToLocalStorage('exams', exams);
+            return true;
+        }
+
+        function generateSeatingPlan(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) return;
+            
+            // Check if there are classrooms
+            if (exam.classrooms.length === 0) {
+                showNotification('Please add at least one classroom before generating seating plan.', 'warning');
+                return;
+            }
+            
+            // Check if there are students
+            if (students.length === 0) {
+                showNotification('Please add students before generating seating plan.', 'warning');
+                return;
+            }
+            
+            // Cancel any existing timer
+            cancelReleaseTimer(examId);
+
+            const timestamp = new Date().toLocaleString();
+            const rooms = [];
+            const studentAssignments = {};
+            const shuffledStudents = [...students].sort(() => Math.random() - 0.5);
+            let studentIndex = 0;
+            
+            exam.classrooms.forEach(classroom => {
+                const roomSeats = [];
+                // Generate seats in row-column order
+                for (let row = 1; row <= classroom.rows; row++) {
+                    for (let col = 1; col <= classroom.columns; col++) {
+                        if (studentIndex < shuffledStudents.length) {
+                            const student = shuffledStudents[studentIndex];
+                            const seatNumber = generateSeatNumber(row, col);
+                            roomSeats.push({
+                                number: seatNumber,
+                                row: row,
+                                col: col,
+                                rollNumber: student.rollNumber,
+                                studentName: student.name
+                            });
+                            studentAssignments[student.rollNumber] = {
+                                room: classroom.name,
+                                seat: seatNumber,
+                                row: row,
+                                col: col,
+                                rollNumber: student.rollNumber
+                            };
+                            studentIndex++;
+                        } else {
+                            const seatNumber = generateSeatNumber(row, col);
+                            roomSeats.push({
+                                number: seatNumber,
+                                row: row,
+                                col: col,
+                                rollNumber: 'EMPTY',
+                                studentName: null
+                            });
+                        }
+                    }
+                }
+                rooms.push({
+                    name: classroom.name,
+                    seats: roomSeats
+                });
+            });
+
+            exam.seatingPlan = { rooms, studentAssignments };
+            exam.status.generated = true;
+            exam.status.lastGenerated = timestamp;
+            exam.timerEndTime = null;
+            exam.status.released = false;
+            
+            saveToLocalStorage('exams', exams);
+            showNotification('New seating plan generated successfully!', 'success');
+            renderAdminExamDetails(examId);
+            syncChannel.postMessage({ type: 'exam_updated', examId: examId });
+        }
+
+        function releaseSeatingPlan(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam || !exam.status.generated) {
+                showNotification('Please generate a seating plan first!', 'warning');
+                return;
+            }
+            exam.status.released = true;
+            exam.status.lastReleased = new Date().toLocaleString();
+            if (timerIntervals[examId]) {
+                clearInterval(timerIntervals[examId]);
+                delete timerIntervals[examId];
+            }
+            exam.timerEndTime = null;
+            saveToLocalStorage('exams', exams);
+            showNotification('Seating plan released to students!', 'success');
+            renderAdminExamDetails(examId);
+            // Broadcast the release event to all other tabs
+            syncChannel.postMessage({ type: 'plan_released', examId: examId });
+        }
+        
+        function autoReleasePlan(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (exam && !exam.status.released) {
+                releaseSeatingPlan(examId);
+            }
+        }
+
+        function updateTimerDisplay(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam || !exam.timerEndTime) {
+                 timerDisplay.textContent = '--:--';
+                 timerDisplay.classList.remove('active');
+                 return;
+            }
+            const remainingTime = exam.timerEndTime - Date.now();
+            if (remainingTime <= 0) {
+                timerDisplay.textContent = '00:00';
+            } else {
+                const minutes = Math.floor((remainingTime / 1000 / 60) % 60);
+                const seconds = Math.floor((remainingTime / 1000) % 60);
+                const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                timerDisplay.textContent = formattedTime;
+            }
+        }
+        
+        function startReleaseTimer(examId, durationInSeconds) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) return;
+            
+            const endTime = Date.now() + durationInSeconds * 1000;
+            exam.timerEndTime = endTime;
+            saveToLocalStorage('exams', exams);
+            
+            // Clear any existing timer
+            if (timerIntervals[examId]) {
+                clearInterval(timerIntervals[examId]);
+                delete timerIntervals[examId];
+            }
+            
+            // Update display immediately
+            updateTimerDisplay(examId);
+
+            timerIntervals[examId] = setInterval(() => {
+                const remainingTime = exam.timerEndTime - Date.now();
+                if (remainingTime <= 0) {
+                    autoReleasePlan(examId);
+                    clearInterval(timerIntervals[examId]);
+                    delete timerIntervals[examId];
+                } else {
+                    updateTimerDisplay(examId);
+                }
+            }, 1000);
+            
+            if (examId === currentExamId) {
+                renderAdminExamDetails(examId);
+            }
+            showNotification('Release timer started!', 'success');
+        }
+        
+        function cancelReleaseTimer(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) return;
+            
+            if (timerIntervals[examId]) {
+                clearInterval(timerIntervals[examId]);
+                delete timerIntervals[examId];
+            }
+            
+            exam.timerEndTime = null;
+            saveToLocalStorage('exams', exams);
+            
+            if (examId === currentExamId) {
+                 renderAdminExamDetails(examId);
+            }
+            showNotification('Release timer canceled.', 'info');
+        }
+
+        function revokeSeatingPlan(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) return;
+            
+            // Cancel any existing timer
+            cancelReleaseTimer(examId);
+            
+            exam.status.released = false;
+            saveToLocalStorage('exams', exams);
+            showNotification('Seating plan has been revoked!', 'info');
+            renderAdminExamDetails(examId);
+            syncChannel.postMessage({ type: 'plan_revoked', examId: examId });
+        }
+        
+        function handlePrint(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam || !exam.status.generated) {
+                showNotification('No seating plan to print.', 'warning');
+                return;
+            }
+
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = '';
+            
+            const printHeader = document.createElement('div');
+            printHeader.className = 'print-header';
+            printHeader.innerHTML = `
+                <h3>Exam Seating Arrangement Report</h3>
+                <h4>Exam: ${exam.name}</h4>
+                <p>Generated: ${exam.status.lastGenerated}</p>
+                <p>Released: ${exam.status.lastReleased || 'Not released'}</p>
+            `;
+            printArea.appendChild(printHeader);
+
+            exam.seatingPlan.rooms.forEach(room => {
+                const roomConfig = exam.classrooms.find(c => c.name === room.name);
+                const columns = roomConfig ? roomConfig.columns : 6;
+                const rows = roomConfig ? roomConfig.rows : 5;
+                
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'print-classroom';
+                
+                const roomContent = `
+                    <h5>Room: ${room.name} (${room.seats.filter(s => s && s.studentName).length} students)</h5>
+                    <div style="display: grid; grid-template-columns: 30px repeat(${columns}, 1fr); gap: 5px; margin-bottom: 20px;">
+                        <div></div>
+                        ${Array.from({length: columns}, (_, i) => `<div style="text-align: center; font-weight: bold;">${i + 1}</div>`).join('')}
+                        ${Array.from({length: rows}, (_, rowIndex) => `
+                            <div style="font-weight: bold; text-align: center;">${numberToLetter(rowIndex + 1)}</div>
+                            ${Array.from({length: columns}, (_, colIndex) => {
+                                const seatIndex = rowIndex * columns + colIndex;
+                                const seat = room.seats[seatIndex];
+                                return `<div class="print-seat" style="text-align: center; padding: 5px; border: 1px solid #ccc;">
+                                    <div>${seat && seat.rollNumber ? seat.rollNumber : 'EMPTY'}</div>
+                                </div>`;
+                            }).join('')}
+                        `).join('')}
+                    </div>
+                `;
+                
+                roomDiv.innerHTML = roomContent;
+                printArea.appendChild(roomDiv);
+            });
+            window.print();
+        }
+
+        function deleteExam(examId) {
+            const index = exams.findIndex(e => e.id === examId);
+            if (index !== -1) {
+                exams.splice(index, 1);
+                saveToLocalStorage('exams', exams);
+                // Broadcast the deletion event to all other tabs
+                syncChannel.postMessage({ type: 'exam_deleted', examId: examId });
+                showNotification('Exam deleted successfully!', 'success');
+                if (currentUser.type === 'admin') {
+                    renderAdminExamsList();
+                    adminExamDetails.classList.add('hidden');
+                    adminExamsList.classList.remove('hidden');
+                } else {
+                    renderStudentExamsList();
+                    studentExamDetails.classList.add('hidden');
+                    studentExamsList.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Student Management Functions
+        function generateStudentPreview() {
+            const prefix = document.getElementById('prefix').value.trim();
+            const start = document.getElementById('start-number').value;
+            const end = document.getElementById('end-number').value;
+            
+            if (!prefix) {
+                showNotification('Please enter a prefix for roll numbers.', 'warning');
+                return;
+            }
+            
+            if (!start || !end) {
+                showNotification('Please enter both start and end numbers.', 'warning');
+                return;
+            }
+            
+            const startNum = parseInt(start);
+            const endNum = parseInt(end);
+            
+            if (startNum > endNum) {
+                showNotification('Start number cannot be greater than end number.', 'warning');
+                return;
+            }
+            
+            if (startNum < 1 || endNum < 1) {
+                showNotification('Numbers must be positive.', 'warning');
+                return;
+            }
+            
+            generatedStudentsPreview = parseRollNumberRange(prefix, startNum, endNum);
+            renderStudentPreview();
+        }
+
+        function renderStudentPreview() {
+            studentPreview.innerHTML = '';
+            totalStudentsCount.textContent = generatedStudentsPreview.length;
+            
+            if (generatedStudentsPreview.length === 0) {
+                studentPreview.innerHTML = '<p class="text-muted">No students generated yet. Use the range generator above.</p>';
+                return;
+            }
+            
+            // Show first 10 and last 10 students for preview
+            const previewCount = Math.min(generatedStudentsPreview.length, 20);
+            const firstHalf = generatedStudentsPreview.slice(0, Math.min(10, generatedStudentsPreview.length));
+            const lastHalf = generatedStudentsPreview.slice(-Math.min(10, generatedStudentsPreview.length));
+            
+            firstHalf.forEach(student => {
+                const studentItem = document.createElement('div');
+                studentItem.className = 'student-list-item';
+                studentItem.textContent = `${student.rollNumber} - ${student.name}`;
+                studentPreview.appendChild(studentItem);
+            });
+            
+            if (generatedStudentsPreview.length > 20) {
+                const ellipsis = document.createElement('div');
+                ellipsis.className = 'student-list-item text-center';
+                ellipsis.textContent = `... ${generatedStudentsPreview.length - 20} more students ...`;
+                studentPreview.appendChild(ellipsis);
+            }
+            
+            lastHalf.forEach(student => {
+                const studentItem = document.createElement('div');
+                studentItem.className = 'student-list-item';
+                studentItem.textContent = `${student.rollNumber} - ${student.name}`;
+                studentPreview.appendChild(studentItem);
+            });
+        }
+
+        function addIndividualStudent() {
+            const individualRoll = document.getElementById('individual-roll').value.trim();
+            
+            if (!individualRoll) {
+                showNotification('Please enter a roll number.', 'warning');
+                return;
+            }
+            
+            // Check if student already exists in preview
+            if (generatedStudentsPreview.some(s => s.rollNumber === individualRoll)) {
+                showNotification('Student already in the list.', 'warning');
+                return;
+            }
+            
+            // Extract number from roll number for name
+            const match = individualRoll.match(/(\d+)$/);
+            const studentNumber = match ? match[1] : generatedStudentsPreview.length + 1;
+            
+            const newStudent = {
+                rollNumber: individualRoll,
+                name: `Student ${studentNumber}`
+            };
+            
+            generatedStudentsPreview.push(newStudent);
+            renderStudentPreview();
+            document.getElementById('individual-roll').value = '';
+            showNotification('Student added to preview.', 'success');
+        }
+
+        function saveGeneratedStudents() {
+            if (generatedStudentsPreview.length === 0) {
+                showNotification('No students to add.', 'warning');
+                return;
+            }
+            
+            // Add students to main students array, avoiding duplicates
+            let addedCount = 0;
+            generatedStudentsPreview.forEach(newStudent => {
+                if (!students.some(s => s.rollNumber === newStudent.rollNumber)) {
+                    students.push(newStudent);
+                    addedCount++;
+                }
+            });
+            
+            saveToLocalStorage('students', students);
+            updateStudentStats();
+            
+            // Reset preview
+            generatedStudentsPreview = [];
+            renderStudentPreview();
+            
+            addStudentsModal.hide();
+            showNotification(`Added ${addedCount} new students successfully!`, 'success');
+            
+            // Broadcast student update
+            syncChannel.postMessage({ type: 'students_updated' });
+        }
+
+        function exportStudentList() {
+            if (students.length === 0) {
+                showNotification('No students to export.', 'warning');
+                return;
+            }
+            
+            let csvContent = "data:text/csv;charset=utf-8,Roll Number,Name\n";
+            students.forEach(student => {
+                csvContent += `${student.rollNumber},${student.name}\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "students_list.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Student list exported successfully!', 'success');
+        }
+
+        function clearAllStudents() {
+            confirmationMessage.textContent = 'Are you sure you want to clear ALL students? This action cannot be undone and will affect all exams.';
+            pendingAction = { type: 'clear_students' };
+            confirmationModal.show();
+        }
+
+        function executeClearStudents() {
+            students = [];
+            saveToLocalStorage('students', students);
+            
+            // Clear seating plans from all exams
+            exams.forEach(exam => {
+                exam.seatingPlan = null;
+                exam.status.generated = false;
+                exam.status.released = false;
+                exam.status.lastGenerated = null;
+                exam.status.lastReleased = null;
+            });
+            saveToLocalStorage('exams', exams);
+            
+            updateStudentStats();
+            updateUI();
+            showNotification('All students cleared successfully!', 'success');
+            syncChannel.postMessage({ type: 'students_cleared' });
+        }
+
+        // Event Listeners
+        loginBtn.addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const isAdmin = userType.value === 'admin';
+            const rememberMe = document.getElementById('remember-me').checked;
+            
+            if (isAdmin) {
+                if (username === 'admin' && password === 'admin123') {
+                    currentUser = { type: 'admin', username: username };
+                    loginPage.classList.add('hidden');
+                    adminDashboard.classList.remove('hidden');
+                    loginError.classList.add('hidden');
+                    if (rememberMe) {
+                        localStorage.setItem('rememberedUser', username);
+                        localStorage.setItem('userType', 'admin');
+                    }
+                    updateUI();
+                } else {
+                    loginError.classList.remove('hidden');
+                }
+            } else {
+                // Student login: username and password are the roll number
+                const student = students.find(s => s.rollNumber === username && s.rollNumber === password);
+                if (student) {
+                    currentUser = {
+                        type: 'student',
+                        username: student.rollNumber,
+                        name: student.name
+                    };
+                    document.getElementById('student-name').textContent = student.name;
+                    document.getElementById('student-roll').textContent = student.rollNumber;
+                    loginPage.classList.add('hidden');
+                    studentDashboard.classList.remove('hidden');
+                    loginError.classList.add('hidden');
+                    if (rememberMe) {
+                        localStorage.setItem('rememberedUser', username);
+                        localStorage.setItem('userType', 'student');
+                    }
+                    updateUI();
+                } else {
+                    loginError.classList.remove('hidden');
+                }
+            }
+        });
+
+        studentLogout.addEventListener('click', function() {
+            studentDashboard.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+            studentExamDetails.classList.add('hidden');
+            studentExamsList.classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            localStorage.removeItem('rememberedUser');
+            localStorage.removeItem('userType');
+            currentUser = null;
+        });
+
+        adminLogout.addEventListener('click', function() {
+            adminDashboard.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+            adminExamDetails.classList.add('hidden');
+            adminExamsList.classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            localStorage.removeItem('rememberedUser');
+            localStorage.removeItem('userType');
+            currentUser = null;
+        });
+
+        saveExamBtn.addEventListener('click', function() {
+            const examName = document.getElementById('exam-name').value;
+            const examDate = document.getElementById('exam-date').value;
+            const examTime = document.getElementById('exam-time').value;
+
+            if (!examName || !examDate || !examTime) {
+                showNotification('Please fill in all fields.', 'warning');
+                return;
+            }
+
+            const newExam = {
+                id: generateUUID(),
+                name: examName,
+                date: examDate,
+                time: examTime,
+                classrooms: [], // Start with empty classrooms
+                seatingPlan: null,
+                status: { generated: false, released: false, lastGenerated: null, lastReleased: null },
+                timerEndTime: null
+            };
+            exams.push(newExam);
+            saveToLocalStorage('exams', exams);
+            scheduleExamModal.hide();
+            showNotification('New exam scheduled successfully!', 'success');
+            renderAdminExamsList();
+            // Broadcast the new exam event so students can see it
+            syncChannel.postMessage({ type: 'exam_updated' });
+        });
+        
+        saveTimerBtn.addEventListener('click', function() {
+            const minutes = parseInt(document.getElementById('timer-minutes').value, 10);
+            const seconds = parseInt(document.getElementById('timer-seconds').value, 10);
+            const totalSeconds = (minutes * 60) + seconds;
+            
+            if (totalSeconds <= 0) {
+                showNotification('Timer duration must be greater than 0.', 'warning');
+                return;
+            }
+            
+            startReleaseTimer(currentExamId, totalSeconds);
+            setTimerModal.hide();
+        });
+
+        saveRoomBtn.addEventListener('click', function() {
+            const roomName = roomNameInput.value.trim();
+            const rows = parseInt(roomRowsInput.value) || 0;
+            const columns = parseInt(roomColumnsInput.value) || 0;
+            const capacity = calculateRoomCapacity();
+
+            if (!roomName) {
+                showNotification('Please enter a room name.', 'warning');
+                return;
+            }
+
+            if (rows <= 0 || columns <= 0) {
+                showNotification('Rows and columns must be greater than 0.', 'warning');
+                return;
+            }
+
+            if (capacity <= 0) {
+                showNotification('Invalid room capacity.', 'warning');
+                return;
+            }
+
+            if (currentExamId) {
+                const success = addRoomToExam(currentExamId, roomName, rows, columns, capacity);
+                if (success) {
+                    // Clear form
+                    roomNameInput.value = '';
+                    roomRowsInput.value = '5';
+                    roomColumnsInput.value = '6';
+                    calculateRoomCapacity();
+                    
+                    addRoomModal.hide();
+                    showNotification(`Room "${roomName}" added successfully!`, 'success');
+                    renderAdminExamDetails(currentExamId);
+                    syncChannel.postMessage({ type: 'exam_updated', examId: currentExamId });
+                }
+            } else {
+                showNotification('No exam selected. Please select an exam first.', 'warning');
+            }
+        });
+
+        // Student Management Event Listeners
+        generateStudentsBtn.addEventListener('click', generateStudentPreview);
+        
+        addIndividualBtn.addEventListener('click', addIndividualStudent);
+        
+        saveStudentsBtn.addEventListener('click', saveGeneratedStudents);
+        
+        exportStudentsBtn.addEventListener('click', exportStudentList);
+        
+        clearStudentsBtn.addEventListener('click', clearAllStudents);
+        
+        // Allow Enter key in individual roll input
+        document.getElementById('individual-roll').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addIndividualStudent();
+            }
+        });
+
+        // Update capacity when rows or columns change
+        roomRowsInput.addEventListener('input', calculateRoomCapacity);
+        roomColumnsInput.addEventListener('input', calculateRoomCapacity);
+
+        // Initialize capacity calculation
+        calculateRoomCapacity();
+
+        document.getElementById('admin-dashboard').addEventListener('click', function(e) {
+            if (e.target.closest('.view-exam-btn')) {
+                const examId = e.target.closest('.view-exam-btn').dataset.examId;
+                currentExamId = examId;
+                renderAdminExamDetails(examId);
+            }
+            if (e.target.closest('.delete-exam-btn')) {
+                const examId = e.target.closest('.delete-exam-btn').dataset.examId;
+                confirmationMessage.textContent = 'Are you sure you want to delete this exam? This action cannot be undone.';
+                pendingAction = { type: 'delete', id: examId };
+                confirmationModal.show();
+            }
+            if (e.target.closest('.remove-room-btn')) {
+                const roomIndex = parseInt(e.target.closest('.remove-room-btn').dataset.roomIndex);
+                const exam = exams.find(e => e.id === currentExamId);
+                if (exam) {
+                    const roomName = exam.classrooms[roomIndex]?.name || 'this room';
+                    confirmationMessage.textContent = `Are you sure you want to remove "${roomName}"? This will reset the seating plan if it exists.`;
+                    pendingAction = { type: 'remove_room', id: currentExamId, index: roomIndex };
+                    confirmationModal.show();
+                }
+            }
+            if (e.target.id === 'generate-plan') {
+                generateSeatingPlan(currentExamId);
+            }
+            if (e.target.id === 'release-plan') {
+                releaseSeatingPlan(currentExamId);
+            }
+            if (e.target.id === 'revoke-plan') {
+                revokeSeatingPlan(currentExamId);
+            }
+            if (e.target.id === 'print-report') {
+                handlePrint(currentExamId);
+            }
+            if (e.target.id === 'cancel-timer-btn') {
+                cancelReleaseTimer(currentExamId);
+            }
+            if (e.target.id === 'back-to-admin-exams') {
+                adminExamDetails.classList.add('hidden');
+                adminExamsList.classList.remove('hidden');
+                currentExamId = null;
+            }
+        });
+
+        document.getElementById('student-dashboard').addEventListener('click', function(e) {
+            if (e.target.closest('.view-student-exam-btn')) {
+                const examId = e.target.closest('.view-student-exam-btn').dataset.examId;
+                currentExamId = examId;
+                renderStudentExamDetails(examId);
+            }
+            if (e.target.id === 'back-to-exams') {
+                studentExamDetails.classList.add('hidden');
+                studentExamsList.classList.remove('hidden');
+            }
+        });
+
+        confirmActionBtn.addEventListener('click', function() {
+            if (pendingAction) {
+                if (pendingAction.type === 'delete') {
+                    deleteExam(pendingAction.id);
+                } else if (pendingAction.type === 'remove_room') {
+                    const success = removeRoomFromExam(pendingAction.id, pendingAction.index);
+                    if (success) {
+                        showNotification('Room removed successfully!', 'success');
+                        renderAdminExamDetails(pendingAction.id);
+                        syncChannel.postMessage({ type: 'exam_updated', examId: pendingAction.id });
+                    }
+                } else if (pendingAction.type === 'clear_students') {
+                    executeClearStudents();
+                }
+            }
+            confirmationModal.hide();
+            pendingAction = null;
+        });
+
+        // Event listener for real-time updates from other tabs via BroadcastChannel
+        syncChannel.addEventListener('message', (event) => {
+            const data = event.data;
+            // Always get the latest data from local storage for any event
+            exams = loadFromLocalStorage('exams');
+            students = loadFromLocalStorage('students') || [];
+            
+            if (currentUser && currentUser.type === 'admin') {
+                if (data.type === 'exam_updated' || data.type === 'exam_deleted' || 
+                    data.type === 'students_updated' || data.type === 'students_cleared') {
+                    renderAdminExamsList();
+                    updateStudentStats();
+                    if (currentExamId) {
+                        // Check if the currently viewed exam was deleted
+                        const examExists = exams.some(e => e.id === currentExamId);
+                        if (!examExists) {
+                             adminExamDetails.classList.add('hidden');
+                             adminExamsList.classList.remove('hidden');
+                             showNotification('The exam you were viewing has been deleted.', 'warning');
+                        } else {
+                            // If it still exists, re-render to reflect any changes
+                            renderAdminExamDetails(currentExamId);
+                        }
+                    }
+                }
+            } else if (currentUser && currentUser.type === 'student') {
+                // IMPORTANT FIX: Re-render the student exam list on ANY update.
+                renderStudentExamsList();
+                
+                // Now handle the specific case of viewing a deleted exam's details
+                if (data.type === 'exam_deleted' && currentExamId === data.examId && !exams.some(e => e.id === data.examId)) {
+                    studentExamDetails.classList.add('hidden');
+                    studentExamsList.classList.remove('hidden');
+                    showNotification('The exam you were viewing has been deleted by the administrator.', 'warning');
+                } else if (data.type === 'plan_released' && data.examId === currentExamId) {
+                    renderStudentExamDetails(currentExamId); // Force re-render with new state
+                    showNotification('Seating plan is now available!', 'info');
+                } else if (data.type === 'plan_revoked' && data.examId === currentExamId) {
+                    renderStudentExamDetails(currentExamId); // Force re-render with new state
+                    showNotification('Seating plan has been revoked by the administrator.', 'info');
+                }
+            }
+        });
+
+        // Initialize App
+        const rememberedUser = localStorage.getItem('rememberedUser');
+        const rememberedUserType = localStorage.getItem('userType');
+        if (rememberedUser && rememberedUserType) {
+            document.getElementById('username').value = rememberedUser;
+            document.getElementById('remember-me').checked = true;
+            document.getElementById('user-type').value = rememberedUserType;
+        }
+
+        initializeData();
+    </script>
+</body>
+</html>
